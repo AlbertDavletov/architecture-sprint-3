@@ -1,0 +1,79 @@
+@startuml Containers
+title Smart Home Containers Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Person(user, "Пользователь")
+
+System_Boundary(SmartHome, "Smart Home") {
+    Container(UIContainer, "WebPage", "JavaScript/HTML")
+    Container(APIGatewayContainer, "API Gateway","Ngnix", "Авторизация, балансировка, кэш")
+    Container_Boundary(SmartHomeControlContainer, "Сервис Smart Home") {
+        Component(SmartHomeControlComponent, "Smart home control", "Java", "Режимы отопления дома, настройки дашборда")
+        ContainerDb(SmartHomeControlComponentDB, "DB", "PostgreSQL", "Режимы отопления, дашборд")
+    }
+
+    Container_Boundary(AnalyticsContainer, "Сервис аналитики") {
+        Component(AnalyticsComponent, "Analytics", "Java", "Аналитика и отчеты")
+        ContainerDb(AnalyticsComponentDB, "DB", "PostgreSQL", "Хранит отчеты и аналитику")
+    }
+
+    SystemQueue(Kafka, "Kafka", "Message Brocker")
+    Component(NotificationService, "Notifications", "Java", "Отправка уведомлений о событиях")
+
+    Container_Boundary(DeviceContainer, "Управление устройствами") {
+        Component(HeatingDevicesComponent, "HeatingDevices", "Java", "Настройка устройств отопления.")
+        Component(TemperatureDevicesComponent, "TemperatureDevices", "Java", "Mониторинг датчиков температуры.")
+        Component(LightDevicesComponent, "LightDevices", "Java", "Управление освещением.")
+        Component(GateDevicesComponent, "GateDevices", "Java", "Управление воротами.")
+        Component(VideoDevicesComponent, "VideoDevices", "Java", "Управление видеокамерами.")
+        Component(DevicesAPIWrapper, "DevicesAPI", "Java", "Инкапсулирует различные API с датчиков и устройств.")
+        ContainerDb(DevicesComponentDB, "DB", "PostgreSQL", "Настройки устройств, прошлые значения с датчиков.")
+    }
+    Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
+
+    Container_Boundary(UserContainer, "Профиль пользователя") {
+        Component(UserComponent, "Users", "Java", "Настройка профиля, добавление/удаление пользователя.")
+        ContainerDb(UserComponentDB, "DB", "PostgreSQL", "Данные о пользователях")
+    }
+
+    Container_Boundary(SupportContainer, "Сервис тех.поддержки") {
+        Component(SupportComponent, "Support", "Java", "Заявки на тех.обслуживание, тикеты")
+        ContainerDb(SupportComponentDB, "DB", "PostgreSQL", "История тех.обслуживания")
+    }
+}
+
+    Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
+
+    Rel(user, UIContainer, "Uses")
+    Rel(UIContainer, APIGatewayContainer, "Получаем данные для дашборда умного дома", "JSON" )
+    Rel(APIGatewayContainer, UserContainer, "Верификация пользователя и доступ к данным пользователя", "JSON")
+    Rel(APIGatewayContainer, SmartHomeControlContainer, "Запросы на yправление умным домом", "JSON")
+    Rel(APIGatewayContainer, AnalyticsContainer, "Получение отчетов и аналитики", "JSON")
+    Rel(APIGatewayContainer, DeviceContainer, "Запросы на изменение конфигурации и получение данных различных устройств", "JSON")
+    Rel(APIGatewayContainer, NotificationService, "Подписка на события", "JSON")
+    Rel(APIGatewayContainer, SupportContainer, "Запросы в тех.поддержку", "JSON")
+    Rel(APIGatewayContainer, RedisContainerExt, "Кэшируем данные", "JSON")
+
+    Rel(UserComponent, UserComponentDB, "Read/Write", "SQL")
+    Rel(SmartHomeControlComponent, SmartHomeControlComponentDB, "Read/Write", "SQL")
+
+    Rel(AnalyticsComponent, AnalyticsComponentDB, "Read/Write", "SQL")
+    Rel(SupportComponent, SupportComponentDB, "Read/Write", "SQL")
+
+    Rel(HeatingDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
+    Rel(TemperatureDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
+    Rel(LightDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
+    Rel(GateDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
+    Rel(VideoDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
+    Rel(HeatingDevicesComponent, DevicesAPIWrapper, "")
+    Rel(TemperatureDevicesComponent, DevicesAPIWrapper, "")
+    Rel(LightDevicesComponent, DevicesAPIWrapper, "")
+    Rel(GateDevicesComponent, DevicesAPIWrapper, "")
+    Rel(VideoDevicesComponent, DevicesAPIWrapper, "")
+    Rel(DevicesAPIWrapper, DevicesAPIContainerExt, "")
+
+    Rel(SmartHomeControlContainer, Kafka, "Отправка событий об изменении режимов устройств.", "JSON")
+    Rel(NotificationService, Kafka, "Подписка на события", "JSON")
+    Rel(AnalyticsContainer, Kafka, "Получение данных для аналитики", "JSON")
+    Rel(DeviceContainer, Kafka, "Отправка событий об изменении настройки устройств, данных с датчиков.", "JSON")
+@enduml

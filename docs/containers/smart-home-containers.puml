@@ -1,0 +1,43 @@
+@startuml Containers
+title Smart Home Containers Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь")
+
+System_Boundary(SmartHome, "Smart Home") {
+    Container(UIContainer, "WebPage", "JavaScript/HTML")
+    Container(APIGatewayContainer, "API Gateway","Ngnix", "Авторизация, балансировка, кэш")
+    Container(SmartHomeControlContainer, "Сервис Smart home", "Java", "Режимы умного дома")
+    Container(DevicesContainer, "Сервис управление устройствами", "Java", "Настройка устройств, датчиков, мониторинг температуры. Device wrapper - инкапсулирует различные API с датчиков и устройств.")
+
+    Container(AnalyticsContainer, "Сервис аналитики", "Java", "Аналитика и отчеты")
+
+    Container(NotificationService, "Notifications", "Java", "Отправка уведомлений о событиях")
+    Container(UserContainer, "Сервис профиля пользователя", "Java", "Профиль пользователя, его дома, устройства.")
+    Container(SupportContainer, "Сервис тех.поддержки", "Java", "Заявки на тех.обслуживание, тикеты")
+
+    SystemQueue(Kafka, "Kafka", "Message Brocker")
+    Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
+}
+
+Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
+
+Rel(user, UIContainer, "Uses")
+Rel(UIContainer, APIGatewayContainer, "")
+Rel(APIGatewayContainer, UserContainer, "")
+Rel(APIGatewayContainer, SmartHomeControlContainer, "")
+Rel(APIGatewayContainer, DevicesContainer, "")
+
+Rel(APIGatewayContainer, AnalyticsContainer, "")
+Rel(APIGatewayContainer, NotificationService, "")
+Rel(APIGatewayContainer, SupportContainer, "")
+Rel(APIGatewayContainer, RedisContainerExt, "")
+
+Rel(DevicesContainer, DevicesAPIContainerExt, "")
+
+Rel(SmartHomeControlContainer, Kafka, "")
+Rel(NotificationService, Kafka, "")
+Rel(AnalyticsContainer, Kafka, "")
+Rel(DevicesContainer, Kafka, "")
+
+@enduml
