@@ -1,0 +1,60 @@
+@startuml Containers
+title Smart Home Containers Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь")
+
+System_Boundary(SmartHome, "Smart Home") {
+    Container(APIGatewayContainer, "API Gateway","Ngnix", "Авторизация, балансировка, кэш")
+    Container_Boundary(SmartHomeControlBoundary, "Сервис Smart Home") {
+        Container(SmartHomeControlContainer, "Smart home control", "Java", "Режимы отопления дома")
+        ContainerDb(SmartHomeControlContainerDB, "DB", "PostgreSQL", "Режимы отопления")
+    }
+    Container_Boundary(DeviceContainerBoundary, "Управление устройствами") {
+        Container(DevicesContainer, "Devices", "Java", "Настройка устройств, датчиков, мониторинг температуры. Device wrapper - инкапсулирует различные API с датчиков и устройств.")
+        ContainerDb(DevicesContainerDB, "DB", "PostgreSQL", "Настройки устройств, прошлые значения с датчиков.")
+    }
+    Container_Boundary(UserContainerBoundary, "Профиль пользователя") {
+        Container(UserContainer, "Users", "Java", "Управляет профилями пользователей")
+        ContainerDb(UserContainerDB, "DB", "PostgreSQL", "Данные о пользователях")
+    }
+    Container_Boundary(AnalyticsContainerBoundary, "Сервис аналитики") {
+        Container(AnalyticsContainer, "Monitoring", "Java", "Аналитика и отчеты")
+        ContainerDb(AnalyticsContainerDB, "DB", "PostgreSQL", "Хранит отчеты и аналитику")
+    }
+    Container_Boundary(SupportContainerBoundary, "Сервис тех.поддержки") {
+        Container(SupportContainer, "Support", "Java", "Заявки на тех.обслуживание, тикеты")
+        ContainerDb(SupportContainerDB, "DB", "PostgreSQL", "История тех.обслуживания")
+    }
+
+    Container(NotificationService, "Notifications", "Java", "Отправка уведомлений о событиях")
+    SystemQueue(Kafka, "Kafka", "Message Brocker")
+
+Container_Ext(UIContainerExt, "WebPage", "JavaScript/HTML")
+Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
+Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
+
+Rel(user, UIContainerExt, "Uses")
+Rel(UIContainerExt, APIGatewayContainer, "Получаем данные для дашборда умного дома", "JSON" )
+Rel(APIGatewayContainer, UserContainer, "Верификация пользователя и доступ к данным пользователя", "JSON")
+Rel(APIGatewayContainer, SmartHomeControlContainer, "Запросы на yправление умным домом", "JSON")
+Rel(APIGatewayContainer, DevicesContainer, "Запросы на изменение конфигурации и получение данных различных устройств", "JSON")
+
+Rel(APIGatewayContainer, AnalyticsContainer, "Получение отчетов и аналитики", "JSON")
+Rel(APIGatewayContainer, NotificationService, "Подписка на события", "JSON")
+Rel(APIGatewayContainer, SupportContainer, "Запросы в тех.поддержку", "JSON")
+Rel(APIGatewayContainer, RedisContainerExt, "Кэшируем данные", "JSON")
+
+Rel(UserContainer, UserContainerDB, "Read/Write", "SQL")
+Rel(SmartHomeControlContainer, SmartHomeControlContainerDB, "Read/Write", "SQL")
+Rel(DevicesContainer, DevicesContainerDB, "Read/Write", "SQL")
+Rel(AnalyticsContainer, AnalyticsContainerDB, "Read/Write", "SQL")
+Rel(SupportContainer, SupportContainerDB, "Read/Write", "SQL")
+Rel(DevicesContainer, DevicesAPIContainerExt, "")
+Rel(AnalyticsContainer, DevicesContainer, "Получение данных для сбора аналитики", "SQL")
+
+Rel(NotificationService, Kafka, "Подписка на события", "JSON")
+Rel(AnalyticsContainer, Kafka, "Получение данных для аналитики", "JSON")
+Rel(DevicesContainer, Kafka, "Отправка событий об изменении настройки устройств, данных с датчиков.", "JSON")
+
+@enduml
