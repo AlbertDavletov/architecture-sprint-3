@@ -1,0 +1,31 @@
+@startuml
+title Smart Home Monolith Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+top to bottom direction
+
+Person(customer, "Клиент", "Пользователь")
+Person(support, "Сотрудник", "Тех.поддержка")
+
+Enterprise_Boundary(monolith, "Smart Home") {
+    System_Boundary(heatingSystem, "Домен: Отопление") {
+        Container(heatingContainer, "Дашборд отопления", "Java", "Управление температурой / мониторинг")
+
+    }
+    System_Boundary(deviceSystem, "Домен: устройства") {
+        Container(deviceContainer, "Настройка устройств", "Java", "Включить / выключить, добавить / удалить")
+    }
+}
+
+System_Ext(heatingDevices, "Отопительное оборудование", "Heating Device")
+System_Ext(heatingSensor, "Температурный датчик", "Temperature Sensor")
+
+Rel(customer, heatingSystem, "")
+Rel(support, deviceSystem, "Подключить устройство")
+
+Rel(heatingContainer, heatingDevices, "")
+Rel(heatingContainer, heatingSensor, "")
+Rel(deviceContainer, heatingDevices, "")
+Rel(deviceContainer, heatingSensor, "")
+
+@enduml

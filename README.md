@@ -1,85 +1,61 @@
-# Базовая настройка
+# Спринт 3
 
-## Запуск minikube
+## Задание 1. Анализ и планирование
 
-[Инструкция по установке](https://minikube.sigs.k8s.io/docs/start/)
+### Функциональность монолитного приложения:
+- **Управление отоплением.** Пользователи могут удалённо включать/выключать отопление в своих домах.
+- **Мониторинг температуры.** Система получает данные о температуре с датчиков, установленных в домах. Пользователи могут просматривать текущую температуру в своих домах через веб-интерфейс.
 
-```bash
-minikube start
-```
+### Архитектура монолитного приложения:
+- **Язык программирования:** Java
+- **База данных:** PostgreSQL
+- **Архитектура:** Монолитная, все компоненты системы (обработка запросов, бизнес-логика, работа с данными) находятся в рамках одного приложения.
+- **Взаимодействие:** Синхронное, запросы обрабатываются последовательно.
+- **Масштабируемость:** Ограничена, так как монолит сложно масштабировать по частям.
+- **Развёртывание:** Требует остановки всего приложения.
 
-## Добавление токена авторизации GitHub
+### Определение доменов и границ контекстов
 
-[Получение токена](https://github.com/settings/tokens/new)
+#### **Управление устройствами**
+- Добавить новое устройство может только сотрудник компании.
+- Пользователи могут включать/отключать отопление в своих домах.
+- Пользователи могут посмотреть данные с устройств.
 
-```bash
-kubectl create secret docker-registry ghcr --docker-server=https://ghcr.io --docker-username=<github_username> --docker-password=<github_token> -n default
-```
+#### **Управление отоплением**
+- Настройка отопления: поддержание заданной пользователем температуры.
 
-## Установка API GW kusk
+### Проблемы монолитного приложения
+- Установка приложения и его обновления требуют выезда специалиста на дом. Нет возможности автоматически обновлять приложение.
+- Самостоятельно подключить свой датчик к системе пользователь не может. Нет шлюза для спайки нового устройства по сети.
+- Сложность масштабирования монолита при росте количество пользователей.
+- Данные напрямую запрашиваются из БД, нет кэширования и балансировки.
+- Нет информации об уровнях авторизации и безопасности системы.
+- При добавлении новых функций, тестирование монолитного приложения займет больше времени. А также придется вручную обновлять все устройства клиентов.
 
-[Install Kusk CLI](https://docs.kusk.io/getting-started/install-kusk-cli)
+### Диаграмма монолитного приложения
 
-```bash
-kusk cluster install
-```
+![Диаграмма монолитного приложения](./docs/images/smart-home-monolith-c4.png)
 
-## Смена адреса образа в helm chart
 
-После того как вы сделали форк репозитория и у вас в репозитории отработал GitHub Action. Вам нужно получить адрес образа <https://github.com/><github_username>/architecture-sprint-3/pkgs/container/architecture-sprint-3
+## Задание 2. Проектирование микросервисной архитектуры
 
-Он выглядит таким образом
-```ghcr.io/<github_username>/architecture-sprint-3:latest```
+### C4 — Уровень контейнеров (Containers)
 
-Замените адрес образа в файле `helm/smart-home-monolith/values.yaml` на полученный файл:
+![C4 — Уровень контейнеров (Containers)](./docs/images/smart-home-containers-c4.png)
 
-```yaml
-image:
-  repository: ghcr.io/<github_username>/architecture-sprint-3
-  tag: latest
-```
+### C4 — Уровень компонентов (Components)
 
-## Настройка terraform
+![C4 — Уровень компонентов (Components)](./docs/images/smart-home-components-c4.png)
 
-[Установите Terraform](https://yandex.cloud/ru/docs/tutorials/infrastructure-management/terraform-quickstart#install-terraform)
+### C4 — Уровень кода (Code)
 
-Создайте файл ~/.terraformrc
+Для диаграммы был выбран модуль DeviceAPI Wrapper - сервис, который инкапсулирует API с различных устройств.
 
-```hcl
-provider_installation {
-  network_mirror {
-    url = "https://terraform-mirror.yandexcloud.net/"
-    include = ["registry.terraform.io/*/*"]
-  }
-  direct {
-    exclude = ["registry.terraform.io/*/*"]
-  }
-}
-```
+![C4 — Уровень кода (Code)](./docs/images/smart-home-code-c4.png)
 
-## Применяем terraform конфигурацию
 
-```bash
-cd terraform
-terraform init
-terraform apply
-```
+## Задание 3. Разработка ER-диаграммы
 
-## Настройка API GW
+Для диаграммы были выбраны основные сущности микросервисного приложения: User, PaymentData, House, SmartScenario, SmartScenarioAction, DeviceType, Device.
 
-```bash
-kusk deploy -i api.yaml
-```
-
-## Проверяем работоспособность
-
-```bash
-kubectl port-forward svc/kusk-gateway-envoy-fleet -n kusk-system 8080:80
-curl localhost:8080/hello
-```
-
-## Delete minikube
-
-```bash
-minikube delete
-```
+![C4 — ER диаграмма](./docs/images/smart-home-er.png)
