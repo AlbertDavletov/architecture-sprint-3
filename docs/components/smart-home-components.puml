@@ -29,7 +29,7 @@ System_Boundary(SmartHome, "Smart Home") {
         Component(DevicesAPIWrapper, "DevicesAPI", "Java", "Инкапсулирует различные API с датчиков и устройств.")
         ContainerDb(DevicesComponentDB, "DB", "PostgreSQL", "Настройки устройств, прошлые значения с датчиков.")
     }
-    Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
+
 
     Container_Boundary(UserContainer, "Профиль пользователя") {
         Component(UserComponent, "Users", "Java", "Настройка профиля, добавление/удаление пользователя.")
@@ -42,6 +42,7 @@ System_Boundary(SmartHome, "Smart Home") {
     }
 }
 
+    Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
     Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
 
     Rel(user, UIContainer, "Uses")
@@ -65,12 +66,13 @@ System_Boundary(SmartHome, "Smart Home") {
     Rel(LightDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
     Rel(GateDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
     Rel(VideoDevicesComponent, DevicesComponentDB, "Read/Write", "SQL")
-    Rel(HeatingDevicesComponent, DevicesAPIWrapper, "")
-    Rel(TemperatureDevicesComponent, DevicesAPIWrapper, "")
-    Rel(LightDevicesComponent, DevicesAPIWrapper, "")
-    Rel(GateDevicesComponent, DevicesAPIWrapper, "")
-    Rel(VideoDevicesComponent, DevicesAPIWrapper, "")
-    Rel(DevicesAPIWrapper, DevicesAPIContainerExt, "")
+
+    Rel(HeatingDevicesComponent, DevicesAPIWrapper, "Задаем температуру", "HTTP, JSON")
+    Rel(TemperatureDevicesComponent, DevicesAPIWrapper, "Данные с темп.датчика", "HTTP, JSON")
+    Rel(LightDevicesComponent, DevicesAPIWrapper, "Вкл/выкл света", "HTTP, JSON")
+    Rel(GateDevicesComponent, DevicesAPIWrapper, "Открытие/закрытие ворот", "HTTP, JSON")
+    Rel(VideoDevicesComponent, DevicesAPIWrapper, "Данные с видеокамеры", "HTTP, Binary")
+    Rel(DevicesAPIWrapper, DevicesAPIContainerExt, "Данные с устройств", "HTTP, Binary")
 
     Rel(SmartHomeControlContainer, Kafka, "Отправка событий об изменении режимов устройств.", "JSON")
     Rel(NotificationService, Kafka, "Подписка на события", "JSON")

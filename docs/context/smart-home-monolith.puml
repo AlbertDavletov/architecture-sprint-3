@@ -8,6 +8,8 @@ Person(customer, "Клиент", "Пользователь")
 Person(support, "Сотрудник", "Тех.поддержка")
 
 Enterprise_Boundary(monolith, "Smart Home") {
+    Container(UIContainer, "WebPage", "JavaScript/HTML")
+
     System_Boundary(heatingSystem, "Домен: Отопление") {
         Container(heatingContainer, "Дашборд отопления", "Java", "Управление температурой / мониторинг")
 
@@ -20,12 +22,14 @@ Enterprise_Boundary(monolith, "Smart Home") {
 System_Ext(heatingDevices, "Отопительное оборудование", "Heating Device")
 System_Ext(heatingSensor, "Температурный датчик", "Temperature Sensor")
 
-Rel(customer, heatingSystem, "")
-Rel(support, deviceSystem, "Подключить устройство")
+Rel(customer, UIContainer, "Взаимодействие с системой")
+Rel(support, UIContainer, "Настройка системы")
+Rel(UIContainer, heatingContainer, "Получаем данные для дашборда / устанавливаем температуру", "GET/POST HTTP, JSON")
+Rel(UIContainer, deviceContainer, "Подключаем / удаляем устройства", "PUT/DELETE HTTP, JSON")
 
-Rel(heatingContainer, heatingDevices, "")
-Rel(heatingContainer, heatingSensor, "")
-Rel(deviceContainer, heatingDevices, "")
-Rel(deviceContainer, heatingSensor, "")
+Rel(heatingContainer, heatingDevices, "", "HTTP, Binary data")
+Rel(heatingContainer, heatingSensor, "", "HTTP, Binary data")
+Rel(deviceContainer, heatingDevices, "", "HTTP, Binary data")
+Rel(deviceContainer, heatingSensor, "", "HTTP, Binary data")
 
 @enduml

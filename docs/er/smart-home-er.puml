@@ -22,7 +22,7 @@ entity Device {
     type_id : UUID
     house_id : UUID
     serial_number : String
-    status : String
+    status : Enum
     metadata : any
 }
 entity DeviceType {

@@ -17,27 +17,27 @@ System_Boundary(SmartHome, "Smart Home") {
     Container(SupportContainer, "Сервис тех.поддержки", "Java", "Заявки на тех.обслуживание, тикеты")
 
     SystemQueue(Kafka, "Kafka", "Message Brocker")
-    Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
 }
 
+Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
 Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
 
 Rel(user, UIContainer, "Uses")
-Rel(UIContainer, APIGatewayContainer, "")
-Rel(APIGatewayContainer, UserContainer, "")
-Rel(APIGatewayContainer, SmartHomeControlContainer, "")
-Rel(APIGatewayContainer, DevicesContainer, "")
+Rel(UIContainer, APIGatewayContainer, "", "HTTP, JSON")
+Rel(APIGatewayContainer, UserContainer, "Данные пользователя", "HTTP, JSON")
+Rel(APIGatewayContainer, SmartHomeControlContainer, "Настройка режимов", "HTTP, JSON")
+Rel(APIGatewayContainer, DevicesContainer, "Данные с устройств", "HTTP, JSON")
 
-Rel(APIGatewayContainer, AnalyticsContainer, "")
-Rel(APIGatewayContainer, NotificationService, "")
-Rel(APIGatewayContainer, SupportContainer, "")
-Rel(APIGatewayContainer, RedisContainerExt, "")
+Rel(APIGatewayContainer, AnalyticsContainer, "Агрегированные данные", "HTTP, JSON")
+Rel(APIGatewayContainer, NotificationService, "Подписка на уведомления", "HTTP, JSON")
+Rel(APIGatewayContainer, SupportContainer, "Запросы в тех.поддержку", "HTTP, JSON")
+Rel(APIGatewayContainer, RedisContainerExt, "Данные из кэша", "HTTP, JSON")
 
-Rel(DevicesContainer, DevicesAPIContainerExt, "")
+Rel(DevicesContainer, DevicesAPIContainerExt, "Данные с устройств", "HTTP, Binary")
 
-Rel(SmartHomeControlContainer, Kafka, "")
-Rel(NotificationService, Kafka, "")
-Rel(AnalyticsContainer, Kafka, "")
-Rel(DevicesContainer, Kafka, "")
+Rel(SmartHomeControlContainer, Kafka, "Данные об изменении режимов умного дома", "TCP, Binary")
+Rel(NotificationService, Kafka, "Читает данные о событиях", "TCP, Binary")
+Rel(AnalyticsContainer, Kafka, "Читает данные для генерации аналитики в реальном времени", "TCP, Binary")
+Rel(DevicesContainer, Kafka, "Данные об изменении статусов устройств", "TCP, Binary")
 
 @enduml
