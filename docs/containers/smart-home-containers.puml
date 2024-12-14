@@ -1,0 +1,43 @@
+@startuml Containers
+title Smart Home Containers Diagram
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "Пользователь")
+
+System_Boundary(SmartHome, "Smart Home") {
+    Container(UIContainer, "WebPage", "JavaScript/HTML")
+    Container(APIGatewayContainer, "API Gateway","Ngnix", "Авторизация, балансировка, кэш")
+    Container(SmartHomeControlContainer, "Сервис Smart home", "Java", "Режимы умного дома")
+    Container(DevicesContainer, "Сервис управление устройствами", "Java", "Настройка устройств, датчиков, мониторинг температуры. Device wrapper - инкапсулирует различные API с датчиков и устройств.")
+
+    Container(AnalyticsContainer, "Сервис аналитики", "Java", "Аналитика и отчеты")
+
+    Container(NotificationService, "Notifications", "Java", "Отправка уведомлений о событиях")
+    Container(UserContainer, "Сервис профиля пользователя", "Java", "Профиль пользователя, его дома, устройства.")
+    Container(SupportContainer, "Сервис тех.поддержки", "Java", "Заявки на тех.обслуживание, тикеты")
+
+    SystemQueue(Kafka, "Kafka", "Message Brocker")
+}
+
+Container_Ext(DevicesAPIContainerExt, "API датчиков и устройств отопления")
+Container_Ext(RedisContainerExt, "Redis", "Кэширование данных")
+
+Rel(user, UIContainer, "Uses")
+Rel(UIContainer, APIGatewayContainer, "", "HTTP, JSON")
+Rel(APIGatewayContainer, UserContainer, "Данные пользователя", "HTTP, JSON")
+Rel(APIGatewayContainer, SmartHomeControlContainer, "Настройка режимов", "HTTP, JSON")
+Rel(APIGatewayContainer, DevicesContainer, "Данные с устройств", "HTTP, JSON")
+
+Rel(APIGatewayContainer, AnalyticsContainer, "Агрегированные данные", "HTTP, JSON")
+Rel(APIGatewayContainer, NotificationService, "Подписка на уведомления", "HTTP, JSON")
+Rel(APIGatewayContainer, SupportContainer, "Запросы в тех.поддержку", "HTTP, JSON")
+Rel(APIGatewayContainer, RedisContainerExt, "Данные из кэша", "HTTP, JSON")
+
+Rel(DevicesContainer, DevicesAPIContainerExt, "Данные с устройств", "HTTP, Binary")
+
+Rel(SmartHomeControlContainer, Kafka, "Данные об изменении режимов умного дома", "TCP, Binary")
+Rel(NotificationService, Kafka, "Читает данные о событиях", "TCP, Binary")
+Rel(AnalyticsContainer, Kafka, "Читает данные для генерации аналитики в реальном времени", "TCP, Binary")
+Rel(DevicesContainer, Kafka, "Данные об изменении статусов устройств", "TCP, Binary")
+
+@enduml

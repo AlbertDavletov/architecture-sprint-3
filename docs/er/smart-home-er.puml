@@ -1,0 +1,74 @@
+@startuml
+title Smart Home ER diagram
+
+entity  User {
+    * id : UUID
+    --
+    name : String
+    email : String
+    password : String
+    metadata : any
+}
+entity House {
+    * id : UUID
+    --
+    user_id : UUID
+    address : String
+    metadata : any
+}
+entity Device {
+    * id : UUID
+    --
+    type_id : UUID
+    house_id : UUID
+    serial_number : String
+    status : Enum
+    metadata : any
+}
+entity DeviceType {
+    * id : UUID
+    --
+    name : String
+    metadata : any
+}
+entity DeviceData {
+    * id : UUID
+    --
+    device_id : UUID
+    timestamp : DateTime
+    data : String
+}
+entity PaymentData {
+    * id : UUID
+    --
+    user_id : UUID
+    metadata : any
+}
+entity SmartScenario {
+    * id : UUID
+    --
+    user_id : UUID
+    name : String
+    description : String
+    actions : String
+    metadata : any
+}
+entity SmartScenarioAction {
+    * id : UUID
+    --
+    scenario_id : UUID
+    device_id : UUID
+    action : String
+    metadata : any
+}
+
+User ||--o{ House
+House ||--o{ Device
+Device ||--o{ DeviceData
+DeviceType ||--o{ Device
+User ||--o{ PaymentData
+User ||--o{ SmartScenario
+SmartScenario ||--o{ SmartScenarioAction
+SmartScenarioAction }o--|| Device
+
+@enduml

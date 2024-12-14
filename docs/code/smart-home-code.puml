@@ -1,0 +1,87 @@
+@startuml
+title Device API Wrapper
+!includeurl https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+class DeviceAPIController {
+    + DeviceFacade facade
+    + init()
+    + startCommand()
+    + stopCommand()
+}
+class DeviceFacade {
+    + initDeviceAPIServices()
+    + processCommand()
+    + validateCommand()
+}
+class DeviceCommandQueue {
+    + addCommand()
+    + removeCommand()
+}
+class DeviceAPIService {
+    + IDeviceInterface devices
+    + initDeviceAPI()
+    + runCommand()
+}
+class DeviceAPIRegistry {
+    + HeatingDevice heatingAPI
+    + TemperatureDevice tempAPI
+    + LightDevice lightAPI
+    + GateDevice gateAPI
+    + VideoDevice videoAPI
+    + registerDeviceAPI()
+    + removeDeviceAPI()
+}
+interface IDeviceInterface {
+    + createDevice()
+    + getDevice()
+    + disableDevice()
+    + enableDevice()
+    + updateDevice()
+    + deleteDevice()
+    + sendCommand()
+}
+class HeatingDevice {
+    + changeTemp(int value)
+}
+class TemperatureDevice {
+    + getTempValue()
+}
+class LightDevice {
+    + turnOn()
+    + turnOff()
+}
+class GateDevice {
+    + openGate()
+    + closeGate()
+}
+class VideoDevice {
+    + turnOn()
+    + turnOff()
+    + startRecording()
+    + stopRecording()
+}
+
+IDeviceInterface -down-> HeatingDevice
+IDeviceInterface -down-> TemperatureDevice
+IDeviceInterface -down-> LightDevice
+IDeviceInterface -down-> GateDevice
+IDeviceInterface -down-> VideoDevice
+DeviceAPIService -down-> HeatingDevice
+DeviceAPIService -down-> TemperatureDevice
+DeviceAPIService -down-> LightDevice
+DeviceAPIService -down-> GateDevice
+DeviceAPIService -down-> VideoDevice
+
+DeviceAPIController -down-> DeviceFacade
+DeviceAPIService -down-> DeviceAPIRegistry
+DeviceFacade -down-> DeviceCommandQueue
+DeviceAPIService -down-> DeviceCommandQueue
+DeviceFacade -down-> DeviceAPIService
+
+HeatingDevice -down-> device_external_api
+TemperatureDevice -down-> device_external_api
+LightDevice -down-> device_external_api
+GateDevice -down-> device_external_api
+VideoDevice -down-> device_external_api
+
+@enduml
